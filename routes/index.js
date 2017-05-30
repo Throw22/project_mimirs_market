@@ -5,40 +5,46 @@ var models = require('./../models/sequelize');
 var Product = models.Product;
 var Category = models.Category;
 var sequelize = models.sequelize;
+var categoryArr = [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+];
 
 var onIndex = (req, res) => {
-  console.log(req.session.shoppingCart);
   var products, categories;
   if (!req.session.shoppingCart) {
     req.session.shoppingCart = [];
   }
   var cartProducts = req.session.shoppingCart;
+  var searchValues = {
+    searchText: 'Search names and descriptions',
+    minPrice: 'Minimum price',
+    maxPrice: 'Maximum price',
+    categoryId: '',
+    orderBy: `"name"`,
+    catText: 'Choose Category:',
+    orderText: 'Order By:'
+  };
 
   Product.findAll({
-    include: [{ model: Category, required: true }],
-    limit: 30
-  }).then(product => {
-    products = product;
-    Category.findAll().then(category => {
-      categories = category;
-      res.render('products/index', { products, categories, cartProducts });
-    });
-  });
-};
-
-var onSearch = (req, res) => {
-  var search = req.query.searchText;
-  var products, categories;
-  var hasSearched = true;
-  var cartProducts = req.session.shoppingCart;
-
-  Product.findAll({
-    where: {
-      $or: [
-        { name: { $iLike: `%${search}%` } },
-        { description: { $iLike: `%${search}%` } }
-      ]
-    },
     include: [{ model: Category, required: true }],
     limit: 30
   }).then(product => {
@@ -48,81 +54,66 @@ var onSearch = (req, res) => {
       res.render('products/index', {
         products,
         categories,
-        hasSearched,
-        search,
-        cartProducts
+        cartProducts,
+        searchValues
       });
     });
   });
 };
 
-var onFilter = (req, res) => {
-  var minPrice = req.query.minPrice;
-  var maxPrice = req.query.maxPrice;
-  var categoryId = req.query.product.categoryId;
-  var products, categories;
-  var hasFiltered = true;
+var onSearch = (req, res) => {
   var cartProducts = req.session.shoppingCart;
+  var searchValues = {
+    searchText: req.query.searchText,
+    minPrice: req.query.minPrice,
+    maxPrice: req.query.maxPrice,
+    categoryId: '',
+    orderBy: '',
+    catText: 'Choose Category:',
+    orderText: 'Order By:'
+  };
 
-  !minPrice ? (minPrice = 0) : minPrice;
-  !maxPrice ? (maxPrice = 9999) : maxPrice;
-
-  if (categoryId) {
-    Product.findAll({
-      where: {
-        $and: [
-          { price: { $gte: minPrice } },
-          { price: { $lte: maxPrice } },
-          { categoryId }
-        ]
-      },
-      include: [{ model: Category, required: true }],
-      limit: 30
-    }).then(product => {
-      products = product;
-      Category.findAll().then(category => {
-        categories = category;
-        res.render('products/index', {
-          products,
-          categories,
-          hasFiltered,
-          minPrice,
-          maxPrice,
-          categoryId,
-          cartProducts
-        });
-      });
-    });
-  } else {
-    Product.findAll({
-      where: {
-        $and: [{ price: { $gte: minPrice } }, { price: { $lte: maxPrice } }]
-      },
-      include: [{ model: Category, required: true }],
-      limit: 30
-    }).then(product => {
-      products = product;
-      Category.findAll().then(category => {
-        categories = category;
-        res.render('products/index', {
-          products,
-          categories,
-          hasFiltered,
-          minPrice,
-          maxPrice,
-          cartProducts
-        });
-      });
-    });
+  if (searchValues.searchText == '') {
+    searchValues.searchText = 'Search names and descriptions';
   }
-};
+  if (searchValues.minPrice == '') {
+    searchValues.minPrice = 'Minimum price';
+  }
+  if (searchValues.maxPrice == '') {
+    searchValues.maxPrice = 'Maximum price';
+  }
 
-var onOrder = (req, res) => {
+  var search = req.query.searchText || '';
+  var minPrice = req.query.minPrice || 0;
+  var maxPrice = req.query.maxPrice || 9999;
+  var categoryId = req.query.product.categoryId;
+  var orderBy = req.query.orderBy || `"name"`;
   var products, categories;
-  var orderBy = req.query.orderBy;
-  var cartProducts = req.session.shoppingCart;
+
+  if (categoryId == '') {
+    categoryId = categoryArr;
+  } else {
+    categoryId = [categoryId];
+  }
 
   Product.findAll({
+    where: {
+      $and: [
+        {
+          $or: [
+            { name: { $iLike: `%${search}%` } },
+            { description: { $iLike: `%${search}%` } }
+          ]
+        },
+        {
+          $and: [
+            { price: { $gte: minPrice } },
+            { price: { $lte: maxPrice } },
+            { categoryId: { $in: categoryId } }
+          ]
+        }
+      ]
+    },
     include: [{ model: Category, required: true }],
     order: orderBy,
     limit: 30
@@ -130,15 +121,19 @@ var onOrder = (req, res) => {
     products = product;
     Category.findAll().then(category => {
       categories = category;
-      res.render('products/index', { products, categories, cartProducts });
+      res.render('products/index', {
+        products,
+        categories,
+        search,
+        cartProducts,
+        searchValues
+      });
     });
   });
 };
 
 router.get('/', onIndex);
 router.get('/search', onSearch);
-router.get('/filter', onFilter);
-router.get('/order', onOrder);
 
 var onAdd = (req, res) => {
   var productId = req.body.productId;

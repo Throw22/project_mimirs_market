@@ -53,11 +53,10 @@
                       </div>
 
 
-                    <!--CUSTOMER INFO END-->
-                    <!-- ORDER INFO -->
+
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                           Order Info <div class="pull-right"></div>
+                           Revenue by Category <div class="pull-right"></div>
                         </div>
                         <div class="panel-body">
 
@@ -69,31 +68,16 @@
                               </tr>
                             </thead>
                             <tbody>
+                              {{#each totals.totalCatRevenue as |cat|}}
                                 <tr>
                                   <td>
-                                     Checkout Date
+                                     {{cat.name}}
                                   </td>
                                   <td>
-                                    {{ order.createdAt }}</a>
+                                    {{ cat.rev }}</a>
                                   </td>
                                 </tr>
-                                <tr>
-                                  <td>
-                                    Stripe Token
-                                  </td>
-                                  <td>
-                                    {{ order.stripeToken}}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    Card Type
-                                  </td>
-                                  <td>
-                                    {{ order.stripeTokenType }}
-                                  </td>
-                                </tr>
-
+                                {{/each}}
                             </tbody>
                           </table>
 
@@ -180,6 +164,38 @@
 
                     </div>
                   </div>
+
+
+
+                  <div class="panel panel-info">
+                      <div class="panel-heading">
+                         Revenue by Product <div class="pull-right"></div>
+                      </div>
+                      <div class="panel-body">
+
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th>Field</th>
+                              <th>Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {{#each totals.totalProductRevenue as |prod|}}
+                              <tr>
+                                <td>
+                                   {{prod.name}}
+                                </td>
+                                <td>
+                                  {{ prod.revenue }}</a>
+                                </td>
+                              </tr>
+                              {{/each}}
+                          </tbody>
+                        </table>
+
+                      </div>
+                    </div>
 
               </div>
 

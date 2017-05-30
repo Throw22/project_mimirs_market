@@ -5,7 +5,7 @@ var OrderedProductSchema = new Schema({
   name: String,
   sku: Number,
   description: String,
-  price: String,
+  price: Number,
   photo: String,
   unitsSold: Number,
   categoryId: Number,

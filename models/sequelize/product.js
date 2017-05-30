@@ -1,25 +1,23 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Product = sequelize.define(
-    'Product',
-    {
-      name: DataTypes.STRING,
-      sku: DataTypes.INTEGER,
-      description: DataTypes.STRING,
-      price: DataTypes.DECIMAL,
-      photo: DataTypes.STRING,
-      unitsSold: DataTypes.INTEGER,
-      categoryId: DataTypes.INTEGER
-    },
-    {
-      classMethods: {
-        associate: function(models) {
-          Product.belongsTo(models.Category, {
-            foreignKey: 'categoryId'
-          });
+  var Car = sequelize.define('Car', {
+      year: {
+        type: DataTypes.INTEGER,
+        validate: { min: 1900, max: 2100 }
+      },
+      model: {
+        type: DataTypes.STRING,
+        validate: {
+          isalphanumeric: {
+            msg: 'Model must be alphanumeric'
+          }
         }
-      }
+      },
+      owner: {type: DataTypes.ARRAY(Data.Types.STRING)},
+    {
+      classMethods: {}
+    }
     }
   );
-  return Product;
+  return Car;
 };
